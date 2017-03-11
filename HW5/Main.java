@@ -5,21 +5,22 @@ import java.io.*;
  */
 public class Main {
 
+    //Count line of proof: 433 + 5 * b
+
     public static void main(String[] args) {
         if (args == null || args.length < 2) {
             System.err.println("Not enough arguments: required 2");
         } else {
             try (BufferedReader bReader = new BufferedReader(new InputStreamReader(new FileInputStream("part.txt"), "UTF-8"));
                  BufferedWriter bWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("proof.txt"), "UTF-8"))) {
-                final String TWOHUNDRED = intToNum(200);
 
                 int a_int = Integer.parseInt(args[0]);
                 int b_int = Integer.parseInt(args[1]);
                 int c_int = a_int + b_int;
 
-                String a = TWOHUNDRED.substring(0, a_int + 1);
-                String b = TWOHUNDRED.substring(0, b_int + 1);
-                String c = TWOHUNDRED.substring(0, c_int + 1);
+                String c = intToNum(c_int);
+                String b = c.substring(0, b_int + 1);
+                String a = c.substring(0, a_int + 1);
 
                 bWriter.write("|-" + a + "+" + b + "=" + c + "\n");
 
@@ -43,8 +44,8 @@ public class Main {
                 bWriter.write(a+"+0="+a + "\n");
 
                 for (int d_int = 0; d_int < b_int; d_int++) {
-                    String d = TWOHUNDRED.substring(0, d_int + 1);
-                    String e = TWOHUNDRED.substring(0, a_int + d_int + 1);
+                    String d = c.substring(0, d_int + 1);
+                    String e = c.substring(0, a_int + d_int + 1);
 
                     bWriter.write("@e@f("+a+"+e=f->"+a+"+e'=f')->@f("+a+"+"+d+"=f->"+a+"+"+d+"'=f')" + "\n");
                     bWriter.write("@f("+a+"+"+d+"=f->"+a+"+"+d+"'=f')" + "\n");
