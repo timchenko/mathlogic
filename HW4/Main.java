@@ -28,7 +28,6 @@ public class Main {
 
         axiomSchemes = new ArrayList<>();
         axiomSchemes.add(new AxiomScheme("A->B->A"));
-        axiomSchemes.add(new AxiomScheme("A->B->A"));
         axiomSchemes.add(new AxiomScheme("(A->B)->(A->B->C)->(A->C)"));
         axiomSchemes.add(new AxiomScheme("A->B->A&B"));
         axiomSchemes.add(new AxiomScheme("A&B->A"));
