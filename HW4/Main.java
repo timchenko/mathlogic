@@ -14,6 +14,7 @@ public class Main {
     ArrayList<IExpression> proof = new ArrayList<>();
     ArrayList<IExpression> newProof = new ArrayList<>();
     ArrayList<IExpression> selfCons = new ArrayList<>();
+    ArrayList<String> annotations = new ArrayList<>();
 
     AxiomScheme inductionAxiom;
     AxiomScheme existenceAxiom;
@@ -253,6 +254,7 @@ public class Main {
             for (IExpression axiom : axioms) {
                 if (expr.equals(axiom)) {
                     isProofed = true;
+                    if (alpha == null) annotations.add(" {from axiom: " + axiom.toString() + "}");
                     if (alpha != null) {
                         newProof.addAll(BaseDeduct(expr, alpha));
                     }
@@ -265,6 +267,7 @@ public class Main {
                 for (IExpression assump : assumptions) {
                     if (expr.equals(assump)) {
                         isProofed = true;
+                        if (alpha == null) annotations.add(" {from assumption: " + assump.toString() + "}");
                         if (alpha != null) {
                             newProof.addAll(BaseDeduct(expr, alpha));
                         }
@@ -277,6 +280,7 @@ public class Main {
                 for (AxiomScheme axiom : axiomSchemes) {
                     if (axiom.isMatch(expr)) {
                         isProofed = true;
+                        if (alpha == null) annotations.add(" {from axiom scheme: " + axiom.toString() + "}");
                         if (alpha != null) {
                             newProof.addAll(BaseDeduct(expr, alpha));
                         }
@@ -307,6 +311,7 @@ public class Main {
                         if (SubstituteVariableToExpr(f, x, new Zero()).equals(((conj).arguments.get(0))) &&
                                 SubstituteVariableToExpr(f, x, new Increment(x)).equals(((ArityOperation) quant.expression).arguments.get(1))) {
                             isProofed = true;
+                            if (alpha == null) annotations.add(" {from induction axiom scheme}");
                             if (alpha != null) {
                                 newProof.addAll(BaseDeduct(expr, alpha));
                             }
@@ -333,6 +338,7 @@ public class Main {
                         try {
                             if (SubstituteVariableToExpr(f, x, term).equals(((ArityOperation) expr).arguments.get(1))) {
                                 isProofed = true;
+                                if (alpha == null) annotations.add(" {from universal axiom scheme}");
                                 if (alpha != null) {
                                     newProof.addAll(BaseDeduct(expr, alpha));
                                 }
@@ -365,6 +371,7 @@ public class Main {
                         try {
                             if (SubstituteVariableToExpr(f, x, term).equals(((ArityOperation) expr).arguments.get(0))) {
                                 isProofed = true;
+                                if (alpha == null) annotations.add(" {from existence axiom scheme}");
                                 if (alpha != null) {
                                     newProof.addAll((BaseDeduct(expr, alpha)));
                                 }
@@ -389,6 +396,13 @@ public class Main {
                         Implication impl = (Implication) proof.get(j);
                         if (impl.getRight().equals(expr) && cache.containsKey(impl.getLeft())) {
                             isProofed = true;
+
+                            int k;
+                            for (k = i - 1; k >= 0; k--) {
+                                if (proof.get(k).equals(impl.getLeft())) break;
+                            }
+                            if (alpha == null) annotations.add(" {it's MP " + (j+2) + "," + (k+2) + "}");
+
                             if (alpha != null) {
                                 HashMap<String, IExpression> hashMap = new HashMap<>();
                                 hashMap.put("A", alpha);
@@ -399,6 +413,7 @@ public class Main {
                                 newProof.add(t);
                                 newProof.add(((ArityOperation) t).arguments.get(1));
                                 newProof.add(((ArityOperation) ((ArityOperation) t).arguments.get(1)).arguments.get(1));
+
                             }
                             break;
                         }
@@ -421,6 +436,13 @@ public class Main {
                                 boolean isFree = !SubstituteVariableToExpr(impl.getLeft(), x, new Zero()).equals(impl.getLeft());
                                 if (!isFree) {
                                     isProofed = true;
+
+                                    int k;
+                                    for (k = i - 1; k >= 0; k--) {
+                                        if (proof.get(k).equals(ne)) break;
+                                    }
+                                    if (alpha == null) annotations.add(" {it's universal rule from " + (k+2) + "}");
+
                                     if (alpha != null) {
                                         try {
                                             if (SubstituteVariableToExpr(alpha, x, new Zero()).equals(alpha)) {
@@ -476,6 +498,13 @@ public class Main {
                                 boolean isFree = !SubstituteVariableToExpr(impl.getRight(), x, new Zero()).equals(impl.getRight());
                                 if (!isFree) {
                                     isProofed = true;
+
+                                    int k;
+                                    for (k = i - 1; k >= 0; k--) {
+                                        if (proof.get(k).equals(ne)) break;
+                                    }
+                                    if (alpha == null) annotations.add(" {it's existence rule from " + (k+2) + "}");
+
                                     if (alpha != null) {
                                         try {
                                             if (SubstituteVariableToExpr(alpha, x, new Zero()).equals(alpha)) {
@@ -543,13 +572,14 @@ public class Main {
                     sw.write(header);
                     sw.newLine();
                 }
-                for (IExpression p : proof) {
-                    sw.write(p.toString());
+                for (int p = 0; p < proof.size(); p++) {
+                    sw.write(proof.get(p).toString());
+                    if (p < annotations.size()) sw.write(annotations.get(p));
                     sw.newLine();
                 }
             } else {
                 sw.write("Вывод неверен начиная с формулы номер "+(i + 1));
-                if (!reason.equals("Не доказано")) sw.write(": "+reason);
+                sw.write(": "+reason);
                 sw.newLine();
             }
         } catch (IOException e) {}

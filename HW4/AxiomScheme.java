@@ -56,4 +56,9 @@ public class AxiomScheme {
 
         } else return false;
     }
+
+    @Override
+    public String toString() {
+        return expression.toString();
+    }
 }
