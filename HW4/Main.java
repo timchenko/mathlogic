@@ -13,6 +13,7 @@ public class Main {
     ArrayList<IExpression> assumptions = new ArrayList<>();
     ArrayList<IExpression> proof = new ArrayList<>();
     ArrayList<IExpression> newProof = new ArrayList<>();
+    ArrayList<String> annotation = new ArrayList<>();
     ArrayList<IExpression> selfCons = new ArrayList<>();
 
     AxiomScheme inductionAxiom;
@@ -45,7 +46,7 @@ public class Main {
         axioms.add(p.parse("!a'=0"));
         axioms.add(p.parse("a+b'=(a+b)'"));
         axioms.add(p.parse("a+0=a"));
-        axioms.add(p.parse("a*0=a"));
+        axioms.add(p.parse("a*0=0"));  
         axioms.add(p.parse("a*b'=a*b+a"));
 
         selfCons = new ArrayList<>();
@@ -256,6 +257,8 @@ public class Main {
                     if (alpha != null) {
                         newProof.addAll(BaseDeduct(expr, alpha));
                     }
+                    annotation.add("axiom" + axioms.indexOf(axiom));
+
                     break;
                 }
             }
@@ -268,6 +271,7 @@ public class Main {
                         if (alpha != null) {
                             newProof.addAll(BaseDeduct(expr, alpha));
                         }
+                        annotation.add("assumption");
                         break;
                     }
                 }
@@ -280,6 +284,7 @@ public class Main {
                         if (alpha != null) {
                             newProof.addAll(BaseDeduct(expr, alpha));
                         }
+                        annotation.add("axiom scheme " + axiomSchemes.indexOf(axiom));
                         break;
                     }
                 }
@@ -293,6 +298,7 @@ public class Main {
                         hashMap.put("A", expr);
                         newProof.add(SubstituteExprsToExpr(e, hashMap));
                     }
+                    annotation.add("a -> a");
                 }
             }
 
@@ -310,6 +316,7 @@ public class Main {
                             if (alpha != null) {
                                 newProof.addAll(BaseDeduct(expr, alpha));
                             }
+                            annotation.add("induction");
                         }
                     } catch (Exception e) {
                         isProoveCorrect = false;
@@ -336,6 +343,7 @@ public class Main {
                                 if (alpha != null) {
                                     newProof.addAll(BaseDeduct(expr, alpha));
                                 }
+                                annotation.add("universal axiom");
                             }
 
                         } catch (Exception e) {
@@ -368,6 +376,8 @@ public class Main {
                                 if (alpha != null) {
                                     newProof.addAll((BaseDeduct(expr, alpha)));
                                 }
+                                annotation.add("existence axiom");
+
                             }
 
                         } catch (Exception e) {
@@ -400,6 +410,13 @@ public class Main {
                                 newProof.add(((ArityOperation) t).arguments.get(1));
                                 newProof.add(((ArityOperation) ((ArityOperation) t).arguments.get(1)).arguments.get(1));
                             }
+                            for (int t = 0; t < i; t++) {
+                                if (proof.get(t).equals(impl.getLeft())) {
+                                    annotation.add("M. P. " + (t + 2) + "     " + (j + 2));
+                                    break;
+                                }
+                            }
+
                             break;
                         }
                     }
@@ -447,6 +464,7 @@ public class Main {
                                             break;
                                         }
                                     }
+                                    annotation.add("Universal Rule");
                                 } else {
                                     isProoveCorrect = false;
                                     reason = "Переменная " + x.toString() + " входит свободно в формулу " + impl.getLeft().toString();
@@ -502,6 +520,7 @@ public class Main {
                                             break;
                                         }
                                     }
+                                    annotation.add("Existence Rule");
                                 } else {
                                     isProoveCorrect = false;
                                     reason = "Переменная " + x.toString() + " входит свободно в формулу " + impl.getLeft().toString();
@@ -519,6 +538,7 @@ public class Main {
 
 
             if (!isProofed || !isProoveCorrect) {
+                annotation.add("Not proofed");
                 if (isProoveCorrect) {
                     reason = "Не доказано";
                 }
@@ -544,7 +564,7 @@ public class Main {
                     sw.newLine();
                 }
                 for (IExpression p : proof) {
-                    sw.write(p.toString());
+                    sw.write(p.toString() + " " + annotation.get(proof.indexOf(p)));
                     sw.newLine();
                 }
             } else {
